@@ -1,31 +1,65 @@
-import { useState } from "react";
-import { getUser } from "./services/github";
-import Profile from "./components/Profile";
-import RepoList from "./components/RepoList";
+import React, { useState } from 'react';
+import './index.css';
+import { getUser, getRepos, type User, type Repo } from './services/github';
+import Profile from './assets/components/Profile';
+import RepoList from './assets/components/RepoList';
 
-function App(){
-  const [username, setUsername] = useState("");
-  const [userData, setUserData] = useState<any>(null);
-  const [repos, setRepos] = useState<any[]>([]);
+export default function App() {
+  const [username, setUsername] = useState('octocat');
+  const [user, setUser] = useState<User | null>(null);
+  const [repos, setRepos] = useState<Repo[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSearch = async () => {
+  async function handleSearch(e?: React.FormEvent) {
+    e?.preventDefault();
     if (!username) return;
+    setError(null);
     setLoading(true);
-    setError("");
-    try{
-      const{user, repositories} = await(username);
-      setUserData(user);
-      setRepos(repositories);
-    } catch (error) {
-      setError("Usuario não econtrado ou erro na Api");
-      setUserData(null);
+    try {
+      const u = await getUser(username);
+      const r = await getRepos(username);
+      setUser(u);
+      setRepos(r);
+    } catch (err: any) {
+      setUser(null);
       setRepos([]);
-    }finally{
+      setError(err.message || 'Erro ao buscar');
+    } finally {
       setLoading(false);
     }
-  };
-return
+  }
 
+  return (
+    <div className="container">
+      <header>
+        <h1>GitHub Profile</h1>
+        <form onSubmit={handleSearch} className="search">
+          <input
+            value={username}
+            onChange={e => setUsername(e.target.value.trim())}
+            placeholder="Digite o username (ex: octocat)"
+          />
+          <button type="submit">Buscar</button>
+        </form>
+      </header>
+
+      <main>
+        {loading && <p>Carregando...</p>}
+        {error && <p className="error">{error}</p>}
+
+        {user && <Profile user={user} />}
+        {user && (
+          <>
+            <h3>Repositórios</h3>
+            <RepoList repos={repos} />
+          </>
+        )}
+      </main>
+
+      <footer className="muted">
+        Teste com username: <strong>octocat</strong>
+      </footer>
+    </div>
+  );
 }
