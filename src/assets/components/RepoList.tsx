@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Repo } from '../../services/github';
+import RepoDetail from './RepoDetail';
 
 function relativeTime(dateString: string) {
   const d = new Date(dateString);
@@ -14,30 +15,41 @@ function relativeTime(dateString: string) {
 type Props = { repos: Repo[] };
 
 export default function RepoList({ repos }: Props) {
+  const [selectedRepo, setSelectedRepo] = useState<Repo | null>(null);
+
   if (!repos.length) return <p>Nenhum repositório público.</p>;
 
   return (
-    <div className="repo-list">
-      {repos.map(r => (
-        <a 
-          key={r.id} 
-          className="repo-item" 
-          href={r.html_url} 
-          target="_blank" 
-          rel="noreferrer"
-        >
-          <div className="repo-left">
-            <h4>{r.name}</h4>
-            {r.description && <p className="muted">{r.description}</p>}
-            <div className="repo-meta">
-              {r.language && <span className="chip">{r.language}</span>}
-              <span>★ {r.stargazers_count}</span>
-              <span>🍴 {r.forks_count}</span>
-              <span className="muted">{relativeTime(r.updated_at)}</span>
+    <>
+      {selectedRepo && selectedRepo.owner && (
+        <RepoDetail
+          owner={selectedRepo.owner.login}
+          repo={selectedRepo.name}
+          onClose={() => setSelectedRepo(null)}
+        />
+      )}
+
+      <div className="repo-list">
+        {repos.map(r => (
+          <div
+            key={r.id}
+            className="repo-item"
+            onClick={() => setSelectedRepo(r)}
+            style={{ cursor: 'pointer' }}
+          >
+            <div className="repo-left">
+              <h4>{r.name}</h4>
+              {r.description && <p className="muted">{r.description}</p>}
+              <div className="repo-meta">
+                {r.language && <span className="chip">{r.language}</span>}
+                <span>★ {r.stargazers_count}</span>
+                <span>🍴 {r.forks_count}</span>
+                <span className="muted">{relativeTime(r.updated_at)}</span>
+              </div>
             </div>
           </div>
-        </a>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }

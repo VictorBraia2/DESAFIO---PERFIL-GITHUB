@@ -3,12 +3,14 @@
     "target": "ESNext",
     "module": "ESNext",
     "jsx": "react-jsx",
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "strict": true,
     "esModuleInterop": true,
-    "baseUrl": "src"
+    "baseUrl": "src",
+    "types": ["node"]
   },
   "include": [
-    "src"
+    "src",
+    "vite.config.ts"
   ]
 }
